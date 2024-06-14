@@ -9,7 +9,7 @@ const Home = () => {
     <div className={styles.container}>
       <div
         className={styles.sampleStyle}
-        style={{ backgroundPosition: `-${30 * sampleVal}px 0` }}
+        style={{ backgroundPosition: `-${30 * sampleVal}px 0` }} // cssスプライト
       />
       <button onClick={() => setSampleVal((Val) => (Val + 1) % 14)}>Sample</button>
     </div>

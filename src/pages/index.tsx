@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import styles from './index.module.css';
 
 const Home = () => {
@@ -47,57 +47,66 @@ const Home = () => {
     return 0 <= x && x < 9 && 0 <= y && y < 9;
   };
 
-  const clickHandler = (input: number, x: number, y: number) => {
+  const emptyCell = (user_input: number[][], board: number[][], x: number, y: number) => {
+    if (!checkRange(x, y) || user_input[y][x] === 1) {
+      return;
+    }
+
+    user_input[y][x] = 1;
+    if (board[y][x] === 0) {
+      for (const dir of direction) {
+        emptyCell(user_input, board, x + dir[1], y + dir[0]);
+      }
+    }
+  };
+
+  const clickHandler = (event: React.MouseEvent, x: number, y: number) => {
+    event.preventDefault();
+
     const user_input = structuredClone(userInputs);
-    if (!user_input[y][x]) {
-      // クリックしたところが空白だったら。
-      user_input[y][x] = 1;
-      const input_flat = user_input.flat();
-      const firstClickCheck = input_flat.filter((v) => v === 1);
-      if (firstClickCheck.length === 1) {
-        // 最初のクリックだったら
-        const board = structuredClone(bombMap);
-        let count = 0;
-        while (count < bumbAmount) {
-          // マップのボムがbumbAmount個になるまで繰り返し
-          const bumb_x = getRandomInt(0, 8);
-          const bumb_y = getRandomInt(0, 8);
-          if (bumb_x !== x && bumb_y !== y && board[bumb_y][bumb_x] !== 1) {
-            // ボムが置ける場所だったら
-            count++;
-            board[bumb_y][bumb_x] = 1;
-          }
+    const input_flat = user_input.flat();
+    const firstClickCheck = input_flat.filter((v) => v === 1);
+    if (firstClickCheck.length === 0) {
+      // 最初のクリックだったら
+      const board = structuredClone(bombMap);
+      let count = 0;
+      while (count < bumbAmount) {
+        // マップのボムがbumbAmount個になるまで繰り返し
+        const bumb_x = getRandomInt(0, 8);
+        const bumb_y = getRandomInt(0, 8);
+        if (bumb_x !== x && bumb_y !== y && board[bumb_y][bumb_x] !== 1) {
+          // ボムが置ける場所だったら
+          count++;
+          board[bumb_y][bumb_x] = 1;
         }
+      }
 
-        for (let i = 0; i < 9; i++) {
-          for (let j = 0; j < 9; j++) {
-            if (board[i][j] === 1) {
-              // 全セルみて、そのセルが爆弾だったら
-              for (const dir of direction) {
-                if (checkRange(i + dir[0], j + dir[1]) && board[i + dir[0]][j + dir[1]] !== 1) {
-                  // 8方向見て爆弾じゃないセルをプラス1する
-                  if (board[i + dir[0]][j + dir[1]] === 0) {
-                    board[i + dir[0]][j + dir[1]] = 1;
-                  }
-
-                  board[i + dir[0]][j + dir[1]]++;
+      for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+          if (board[i][j] === 1) {
+            // 全セルみて、そのセルが爆弾だったら
+            for (const dir of direction) {
+              if (checkRange(i + dir[0], j + dir[1]) && board[i + dir[0]][j + dir[1]] !== 1) {
+                // 8方向見て爆弾じゃないセルをプラス1する
+                if (board[i + dir[0]][j + dir[1]] === 0) {
+                  // そのセルが爆弾が置かれていなかったら、+1する。
+                  board[i + dir[0]][j + dir[1]] = 1;
                 }
+
+                board[i + dir[0]][j + dir[1]]++;
               }
             }
           }
         }
-        setBombMap(board);
-      } else {
-        // 初回のクリックでなければ
-        console.log('click');
       }
+      emptyCell(user_input, board, x, y);
+      setBombMap(board);
       setUserInputs(user_input);
-
-      // 各セルの周りにある爆弾の数をカウント
-    } else {
-      // すでにクリックしたことがあるマスをクリックしたら
       return;
     }
+
+    emptyCell(user_input, bombMap, x, y);
+    setUserInputs(user_input);
   };
 
   return (
@@ -126,18 +135,25 @@ const Home = () => {
             <div className={styles.gameBoardMap}>
               {bombMap.map((row, y) =>
                 row.map((cell, x) => (
-                  <div
-                    className={styles.cell}
-                    onClick={(e) => clickHandler(e.button, x, y)}
-                    key={`${x}-${y}`}
-                  >
-                    {cell > 0 && userInputs[y][x] === 1 && (
+                  <div key={`${x}-${y}`}>
+                    {userInputs[y][x] === 0 && (
                       <div
-                        className={styles.bomb}
-                        style={{
-                          backgroundPosition: cell === 1 ? '-300px 0' : `-${(cell - 2) * 30}px 0`,
-                        }}
+                        className={styles.coverCell}
+                        onClick={(e) => clickHandler(e.button, x, y)}
                       />
+                    )}
+                    {userInputs[y][x] === 1 && (
+                      <div className={styles.cell} onClick={(e) => clickHandler(e.button, x, y)}>
+                        {cell > 0 && userInputs[y][x] === 1 && (
+                          <div
+                            className={styles.bomb}
+                            style={{
+                              backgroundPosition:
+                                cell === 1 ? '-300px 0' : `-${(cell - 2) * 30}px 0`,
+                            }}
+                          />
+                        )}
+                      </div>
                     )}
                   </div>
                 )),

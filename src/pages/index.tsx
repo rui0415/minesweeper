@@ -26,10 +26,25 @@ const Home = () => {
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
   ]);
 
+  const direction = [
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [-1, -1],
+    [0, -1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+  ];
+
   const bumbAmount = 10;
 
   const getRandomInt = (min: number, max: number) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
+  const checkRange = (x: number, y: number) => {
+    return 0 <= x && x < 9 && 0 <= y && y < 9;
   };
 
   const clickHandler = (input: number, x: number, y: number) => {
@@ -41,26 +56,44 @@ const Home = () => {
       const firstClickCheck = input_flat.filter((v) => v === 1);
       if (firstClickCheck.length === 1) {
         // 最初のクリックだったら
-        let i = 0;
         const board = structuredClone(bombMap);
-        while (i < bumbAmount) {
+        let count = 0;
+        while (count < bumbAmount) {
           // マップのボムがbumbAmount個になるまで繰り返し
           const bumb_x = getRandomInt(0, 8);
           const bumb_y = getRandomInt(0, 8);
           if (bumb_x !== x && bumb_y !== y && board[bumb_y][bumb_x] !== 1) {
             // ボムが置ける場所だったら
-            i++;
+            count++;
             board[bumb_y][bumb_x] = 1;
           }
         }
+
+        for (let i = 0; i < 9; i++) {
+          for (let j = 0; j < 9; j++) {
+            if (board[i][j] === 1) {
+              // 全セルみて、そのセルが爆弾だったら
+              for (const dir of direction) {
+                if (checkRange(i + dir[0], j + dir[1]) && board[i + dir[0]][j + dir[1]] !== 1) {
+                  // 8方向見て爆弾じゃないセルをプラス1する
+                  if (board[i + dir[0]][j + dir[1]] === 0) {
+                    board[i + dir[0]][j + dir[1]] = 1;
+                  }
+
+                  board[i + dir[0]][j + dir[1]]++;
+                }
+              }
+            }
+          }
+        }
         setBombMap(board);
-        setUserInputs(user_input);
-        return;
       } else {
         // 初回のクリックでなければ
-        setUserInputs(user_input);
-        return;
+        console.log('click');
       }
+      setUserInputs(user_input);
+
+      // 各セルの周りにある爆弾の数をカウント
     } else {
       // すでにクリックしたことがあるマスをクリックしたら
       return;
@@ -92,17 +125,17 @@ const Home = () => {
             {/* マップ */}
             <div className={styles.gameBoardMap}>
               {bombMap.map((row, y) =>
-                row.map((bombCount, x) => (
+                row.map((cell, x) => (
                   <div
                     className={styles.cell}
                     onClick={(e) => clickHandler(e.button, x, y)}
                     key={`${x}-${y}`}
                   >
-                    {bombCount === 1 && (
+                    {cell > 0 && userInputs[y][x] === 1 && (
                       <div
                         className={styles.bomb}
                         style={{
-                          backgroundPosition: bombCount === 1 ? `-300px 0` : `-330px 0`,
+                          backgroundPosition: cell === 1 ? '-300px 0' : `-${(cell - 2) * 30}px 0`,
                         }}
                       />
                     )}

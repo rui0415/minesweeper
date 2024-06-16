@@ -85,8 +85,6 @@
 .gameBoardMap {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
-
-  /* padding: 5px; */
   background-color: #464e56;
   border: 5px inset #788088;
 }
@@ -100,6 +98,12 @@
   border: 2px solid #2d3034;
 }
 
+.cellIcon {
+  width: 30px;
+  height: 30px;
+  background: url('../assets/images/icons.png') no-repeat;
+}
+
 .coverCell {
   display: flex;
   align-items: center;
@@ -110,10 +114,10 @@
   border: 3px outset #788088;
 }
 
-.bomb {
+.coverCellIcon {
   width: 30px;
   height: 30px;
-  background: url('../assets/images/icons.png') no-repeat;
+  background: url('../assets/images/icons.png') no-repeat -270px 0;
 }
 
 @media (width <= 768px) {

@@ -10,6 +10,7 @@
 }
 
 .gameStyle {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -36,6 +37,18 @@
 .hard:hover,
 .custom:hover {
   color: #fff;
+}
+
+.endgame {
+  position: absolute;
+  top: 20%;
+  left: 100%;
+  width: 30vh;
+  height: 40vh;
+  padding: 15px;
+  margin-left: 20px;
+  color: azure;
+  border: 2px solid gray;
 }
 
 .gameBoard {

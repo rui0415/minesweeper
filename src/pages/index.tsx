@@ -42,7 +42,7 @@ const Home = () => {
     [1, 1],
   ];
 
-  const bumbAmount = 10;
+  const bombAmount = 10;
 
   const getRandomInt = (min: number, max: number) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -76,12 +76,12 @@ const Home = () => {
       if (bombMap[y][x] === 1) setClearCheck(2);
       const user_input = structuredClone(userInputs);
       const input_flat = user_input.flat();
-      const firstClickCheck = input_flat.filter((v) => v === 1);
-      if (firstClickCheck.length === 0) {
+      const clickCount = input_flat.filter((v) => v === 1);
+      if (clickCount.length === 0) {
         // 最初のクリックだったら
         const board = structuredClone(bombMap);
         let count = 0;
-        while (count < bumbAmount) {
+        while (count < bombAmount) {
           // マップのボムがbumbAmount個になるまで繰り返し
           const bumb_x = getRandomInt(0, 8);
           const bumb_y = getRandomInt(0, 8);
@@ -115,10 +115,13 @@ const Home = () => {
         setUserInputs(user_input);
         return;
       }
-
       emptyCell(user_input, bombMap, x, y);
       setUserInputs(user_input);
+      const input_flat2 = user_input.flat();
+      const clickCountAgain = input_flat2.filter((v) => v === 1);
+      if (clickCountAgain.length === 81 - bombAmount) setClearCheck(1);
     }
+    return;
   };
 
   return (
@@ -131,6 +134,19 @@ const Home = () => {
           <div className={styles.hard}>上級</div>
           <div className={styles.custom}>カスタム</div>
         </div>
+
+        {clearCheck > 0 && (
+          <div className={styles.endgame}>
+            <div>タイム：秒</div>
+            <div>予想タイム：</div>
+            <div>3BV：</div>
+            <div>3BV/s：</div>
+            <div>クリック数：</div>
+            <div>効率：</div>
+            <hr />
+            <div>経験：</div>
+          </div>
+        )}
 
         <div>
           <div className={styles.gameBoard}>

@@ -26,6 +26,11 @@ const Home = () => {
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
   ]);
 
+  // 0 = ゲーム中
+  // 1 = ゲームクリア
+  // 2 = ゲームオーバー
+  const [clearCheck, setClearCheck] = useState(0);
+
   const direction = [
     [0, 1],
     [-1, 1],
@@ -51,7 +56,6 @@ const Home = () => {
     if (!checkRange(x, y) || user_input[y][x] === 1) {
       return;
     }
-    // if (user_input[y][x] !== 2) user_input[y][x] = 1;
     user_input[y][x] = 1;
     if (board[y][x] === 0) {
       for (const dir of direction) {
@@ -69,6 +73,7 @@ const Home = () => {
       return;
     } else if (event.type === 'click') {
       if (userInputs[y][x] === 2) return; // フラグが立っていたらクリックできない
+      if (bombMap[y][x] === 1) setClearCheck(2);
       const user_input = structuredClone(userInputs);
       const input_flat = user_input.flat();
       const firstClickCheck = input_flat.filter((v) => v === 1);
@@ -133,7 +138,10 @@ const Home = () => {
             <div className={styles.gameBoardHeader}>
               <div className={styles.flagCount}>000</div>
               <div className={styles.gameIcon}>
-                <div className={styles.icon} style={{ backgroundPosition: `-330px 0` }} />
+                <div
+                  className={styles.icon}
+                  style={{ backgroundPosition: `-${330 + 30 * clearCheck}px 0` }}
+                />
               </div>
               <div className={styles.timer}>000</div>
             </div>

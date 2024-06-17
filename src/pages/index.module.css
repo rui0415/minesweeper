@@ -54,7 +54,7 @@
 .gameBoard {
   display: flex;
   flex-direction: column;
-  padding: 7px;
+  padding: 10px;
   background-color: #464e56;
   border: 5px outset #788088;
 }
@@ -64,7 +64,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px;
+  height: 80px;
+  padding: 5px;
   margin-bottom: 8.3px;
   background-color: #464e56;
   border: 5px inset #788088;
@@ -72,31 +73,39 @@
 
 .flagCount,
 .timer {
-  width: 50px;
-  height: 25px;
+  display: flex;
+  width: 30%;
+  height: 60px;
   font-family: 'Digital-7', sans-serif;
   font-size: 20px;
   line-height: 25px;
-  color: red;
   text-align: center;
   background-color: black;
-  border: 1.5px inset #788088;
+  border: 3px inset #788088;
+}
+
+.flagImg {
+  width: 35.2px;
+  height: 55px;
+  background: url('../assets/images/number.png') no-repeat;
 }
 
 .gameIcon {
   display: flex;
+  align-items: center;
   justify-content: center;
+  width: 60px;
+  height: 60px;
   background-color: #464e56;
-  border: 3.5px outset #788088;
+  border: 5px outset #788088;
 }
 
 .active {
-  /* position:; */
   background-color: #3b3f45;
-  border-top: 5px inset #788088;
-  border-right: 2px outset #788088;
-  border-bottom: 2px outset #788088;
-  border-left: 5px inset #788088;
+  border-top: 7px inset #788088;
+  border-right: 3px outset #788088;
+  border-bottom: 3px outset #788088;
+  border-left: 7px inset #788088;
 }
 
 .icon {
@@ -118,7 +127,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  border: 2px solid #2d3034;
+  border: 1.5px solid #2d3034;
 }
 
 .cellIcon {
@@ -134,7 +143,7 @@
   width: 40px;
   height: 40px;
   background-color: #464e56;
-  border: 3px outset #788088;
+  border: 4px outset #788088;
 }
 
 .coverCellIcon {

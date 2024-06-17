@@ -182,7 +182,20 @@ const Home = () => {
           <div className={styles.gameBoard}>
             {/* ボードの中のヘッダー部分。ボムの数やニコちゃんマーク、タイマー */}
             <div className={styles.gameBoardHeader}>
-              <div className={styles.flagCount}>000</div>
+              <div className={styles.flagCount}>
+                <div
+                  className={styles.flagImg}
+                  style={{ backgroundPosition: `-${(35.2 * 0) % 352}px 0` }}
+                />
+                <div
+                  className={styles.flagImg}
+                  style={{ backgroundPosition: `-${(35.2 * 1) % 352}px 0` }}
+                />
+                <div
+                  className={styles.flagImg}
+                  style={{ backgroundPosition: `-${(35.2 * 3) % 352}px 0` }}
+                />
+              </div>
               <div className={styles.gameIcon} onClick={() => handleGameIconClick()}>
                 <div
                   className={styles.icon}

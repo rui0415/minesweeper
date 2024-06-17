@@ -44,6 +44,32 @@ const Home = () => {
 
   const bombAmount = 10;
 
+  const resetGame = () => {
+    const board = structuredClone(bombMap);
+    const user_input = structuredClone(userInputs);
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < 9; j++) {
+        board[i][j] = 0;
+        user_input[i][j] = 0;
+      }
+    }
+    setBombMap(board);
+    setUserInputs(user_input);
+    setClearCheck(0);
+    return;
+  };
+
+  const handleGameIconClick = () => {
+    const gameIconElement = document.querySelector(`.${styles.gameIcon}`);
+    if (gameIconElement) {
+      gameIconElement.classList.add(styles.active);
+      setTimeout(() => {
+        gameIconElement.classList.remove(styles.active);
+        resetGame();
+      }, 250);
+    }
+  };
+
   const getRandomInt = (min: number, max: number) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
@@ -66,6 +92,8 @@ const Home = () => {
 
   const clickHandler = (event: React.MouseEvent, x: number, y: number) => {
     event.preventDefault();
+    if (clearCheck === 2) return;
+
     if (event.type === 'contextmenu') {
       const user_input = structuredClone(userInputs);
       user_input[y][x] = user_input[y][x] === 2 ? 0 : 2; // 2: フラグ
@@ -73,7 +101,9 @@ const Home = () => {
       return;
     } else if (event.type === 'click') {
       if (userInputs[y][x] === 2) return; // フラグが立っていたらクリックできない
-      if (bombMap[y][x] === 1) setClearCheck(2);
+      if (bombMap[y][x] === 1) {
+        setClearCheck(2);
+      }
       const user_input = structuredClone(userInputs);
       const input_flat = user_input.flat();
       const clickCount = input_flat.filter((v) => v === 1);
@@ -139,8 +169,8 @@ const Home = () => {
           <div className={styles.endgame}>
             <div>タイム：秒</div>
             <div>予想タイム：</div>
-            <div>3BV：</div>
-            <div>3BV/s：</div>
+            <div>3BV : </div>
+            <div>3BV/s : </div>
             <div>クリック数：</div>
             <div>効率：</div>
             <hr />
@@ -153,7 +183,7 @@ const Home = () => {
             {/* ボードの中のヘッダー部分。ボムの数やニコちゃんマーク、タイマー */}
             <div className={styles.gameBoardHeader}>
               <div className={styles.flagCount}>000</div>
-              <div className={styles.gameIcon}>
+              <div className={styles.gameIcon} onClick={() => handleGameIconClick()}>
                 <div
                   className={styles.icon}
                   style={{ backgroundPosition: `-${330 + 30 * clearCheck}px 0` }}

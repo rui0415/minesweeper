@@ -60,6 +60,7 @@
 }
 
 .gameBoardHeader {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -87,6 +88,15 @@
   justify-content: center;
   background-color: #464e56;
   border: 3.5px outset #788088;
+}
+
+.active {
+  /* position:; */
+  background-color: #3b3f45;
+  border-top: 5px inset #788088;
+  border-right: 2px outset #788088;
+  border-bottom: 2px outset #788088;
+  border-left: 5px inset #788088;
 }
 
 .icon {

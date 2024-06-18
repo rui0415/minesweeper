@@ -101,10 +101,23 @@ const Home = () => {
       return;
     } else if (event.type === 'click') {
       if (userInputs[y][x] === 2) return; // フラグが立っていたらクリックできない
-      if (bombMap[y][x] === 1) {
-        setClearCheck(2);
-      }
       const user_input = structuredClone(userInputs);
+
+      if (bombMap[y][x] === 1) {
+        // ボムをクリックしたら
+
+        setClearCheck(2);
+        for (let i = 0; i < 9; i++) {
+          for (let j = 0; j < 9; j++) {
+            if (bombMap[i][j] === 1) {
+              user_input[i][j] = 1;
+            }
+          }
+        }
+        user_input[y][x] = 3;
+        setUserInputs(user_input);
+        return;
+      }
       const input_flat = user_input.flat();
       const clickCount = input_flat.filter((v) => v === 1);
       if (clickCount.length === 0) {
@@ -210,7 +223,7 @@ const Home = () => {
               {bombMap.map((row, y) =>
                 row.map((cell, x) => (
                   <div key={`${x}-${y}`}>
-                    {userInputs[y][x] !== 1 && (
+                    {userInputs[y][x] === 0 && (
                       <div
                         className={styles.coverCell}
                         onClick={(e) => clickHandler(e, x, y)}
@@ -219,14 +232,15 @@ const Home = () => {
                         {userInputs[y][x] === 2 && <div className={styles.coverCellIcon} />}
                       </div>
                     )}
-                    {userInputs[y][x] === 1 && (
+                    {userInputs[y][x] > 0 && (
                       <div className={styles.cell} onClick={(e) => clickHandler(e, x, y)}>
-                        {cell > 0 && userInputs[y][x] === 1 && (
+                        {cell > 0 && (
                           <div
                             className={styles.cellIcon}
                             style={{
                               backgroundPosition:
                                 cell === 1 ? '-300px 0' : `-${(cell - 2) * 30}px 0`,
+                              backgroundColor: userInputs[y][x] === 3 ? 'red' : '',
                             }}
                           />
                         )}

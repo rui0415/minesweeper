@@ -74,8 +74,10 @@
 .flagCount,
 .timer {
   display: flex;
+  justify-content: space-between;
   width: 30%;
   height: 60px;
+  padding-top: 3px;
   font-family: 'Digital-7', sans-serif;
   font-size: 20px;
   line-height: 25px;
@@ -85,8 +87,14 @@
 }
 
 .flagImg {
-  width: 35.2px;
-  height: 55px;
+  width: 30px;
+  margin: 2px;
+  background: url('../assets/images/number.png') no-repeat;
+}
+
+.timerImg {
+  width: 30px;
+  margin: 1px;
   background: url('../assets/images/number.png') no-repeat;
 }
 

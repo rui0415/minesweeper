@@ -43,6 +43,7 @@ const Home = () => {
   ];
 
   const bombAmount = 10;
+  const [flagCount, setFlagCount] = useState(bombAmount);
 
   const resetGame = () => {
     const board = structuredClone(bombMap);
@@ -56,6 +57,7 @@ const Home = () => {
     setBombMap(board);
     setUserInputs(user_input);
     setClearCheck(0);
+    setFlagCount(bombAmount);
     return;
   };
 
@@ -82,6 +84,7 @@ const Home = () => {
     if (!checkRange(x, y) || user_input[y][x] === 1) {
       return;
     }
+    if (user_input[y][x] === 2) setFlagCount(flagCount + 1);
     user_input[y][x] = 1;
     if (board[y][x] === 0) {
       for (const dir of direction) {
@@ -96,7 +99,15 @@ const Home = () => {
 
     if (event.type === 'contextmenu') {
       const user_input = structuredClone(userInputs);
-      user_input[y][x] = user_input[y][x] === 2 ? 0 : 2; // 2: フラグ
+      if (user_input[y][x] === 0 && flagCount === 0) return;
+      // user_input[y][x] = user_input[y][x] === 2 ? 0 : 2; // 2: フラグ
+      if (user_input[y][x] === 2) {
+        user_input[y][x] = 0;
+        setFlagCount(flagCount + 1);
+      } else {
+        user_input[y][x] = 2;
+        setFlagCount(flagCount - 1);
+      }
       setUserInputs(user_input);
       return;
     } else if (event.type === 'click') {
@@ -198,15 +209,21 @@ const Home = () => {
               <div className={styles.flagCount}>
                 <div
                   className={styles.flagImg}
-                  style={{ backgroundPosition: `-${(35.2 * 0) % 352}px 0` }}
+                  style={{
+                    backgroundPosition: `-${(((Math.floor(flagCount / 100) % 100) + 9) * 30) % 300}px 0`,
+                  }}
                 />
                 <div
                   className={styles.flagImg}
-                  style={{ backgroundPosition: `-${(35.2 * 1) % 352}px 0` }}
+                  style={{
+                    backgroundPosition: `-${(((Math.floor(flagCount / 10) % 10) + 9) * 30) % 300}px 0`,
+                  }}
                 />
                 <div
                   className={styles.flagImg}
-                  style={{ backgroundPosition: `-${(35.2 * 3) % 352}px 0` }}
+                  style={{
+                    backgroundPosition: `-${(((flagCount % 10) + 9) * 30) % 300}px 0`,
+                  }}
                 />
               </div>
               <div className={styles.gameIcon} onClick={() => handleGameIconClick()}>
@@ -215,7 +232,20 @@ const Home = () => {
                   style={{ backgroundPosition: `-${330 + 30 * clearCheck}px 0` }}
                 />
               </div>
-              <div className={styles.timer}>000</div>
+              <div className={styles.timer}>
+                <div
+                  className={styles.timerImg}
+                  style={{ backgroundPosition: `-${(30 * 0) % 300}px 0` }}
+                />
+                <div
+                  className={styles.timerImg}
+                  style={{ backgroundPosition: `-${(30 * 0) % 300}px 0` }}
+                />
+                <div
+                  className={styles.timerImg}
+                  style={{ backgroundPosition: `-${(30 * 0) % 300}px 0` }}
+                />
+              </div>
             </div>
 
             {/* マップ */}
@@ -223,7 +253,7 @@ const Home = () => {
               {bombMap.map((row, y) =>
                 row.map((cell, x) => (
                   <div key={`${x}-${y}`}>
-                    {userInputs[y][x] === 0 && (
+                    {(userInputs[y][x] === 0 || userInputs[y][x] === 2) && (
                       <div
                         className={styles.coverCell}
                         onClick={(e) => clickHandler(e, x, y)}
@@ -232,7 +262,7 @@ const Home = () => {
                         {userInputs[y][x] === 2 && <div className={styles.coverCellIcon} />}
                       </div>
                     )}
-                    {userInputs[y][x] > 0 && (
+                    {(userInputs[y][x] === 1 || userInputs[y][x] === 3) && (
                       <div className={styles.cell} onClick={(e) => clickHandler(e, x, y)}>
                         {cell > 0 && (
                           <div

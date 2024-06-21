@@ -44,7 +44,7 @@
   top: 20%;
   left: 100%;
   width: 30vh;
-  height: 40vh;
+  height: 10vh;
   padding: 15px;
   margin-left: 20px;
   color: azure;
@@ -94,7 +94,7 @@
 
 .timerImg {
   width: 30px;
-  margin: 1px;
+  margin: 2px;
   background: url('../assets/images/number.png') no-repeat;
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './index.module.css';
 
 const Home = () => {
@@ -26,11 +26,6 @@ const Home = () => {
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
   ]);
 
-  // 0 = ゲーム中
-  // 1 = ゲームクリア
-  // 2 = ゲームオーバー
-  const [clearCheck, setClearCheck] = useState(0);
-
   const direction = [
     [0, 1],
     [-1, 1],
@@ -43,6 +38,12 @@ const Home = () => {
   ];
 
   const bombAmount = 10;
+  // 0 = ゲーム中
+  // 1 = ゲームクリア
+  // 2 = ゲームオーバー
+  const [clearCheck, setClearCheck] = useState(0);
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
   const [flagCount, setFlagCount] = useState(bombAmount);
 
   const resetGame = () => {
@@ -57,6 +58,8 @@ const Home = () => {
     setBombMap(board);
     setUserInputs(user_input);
     setClearCheck(0);
+    setTime(0);
+    setIsRunning(false);
     setFlagCount(bombAmount);
     return;
   };
@@ -84,13 +87,33 @@ const Home = () => {
     if (!checkRange(x, y) || user_input[y][x] === 1) {
       return;
     }
-    if (user_input[y][x] === 2) setFlagCount(flagCount + 1);
+    if (user_input[y][x] === 2) setFlagCount((prevFlagCount) => prevFlagCount + 1);
     user_input[y][x] = 1;
     if (board[y][x] === 0) {
       for (const dir of direction) {
         emptyCell(user_input, board, x + dir[1], y + dir[0]);
       }
     }
+  };
+
+  const gameSetCheck = (x: number, y: number, user_input: number[][]) => {
+    if (bombMap[y][x] === 1) {
+      // ボムをクリックしたら負け
+
+      for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+          if (bombMap[i][j] === 1) {
+            user_input[i][j] = 1;
+          }
+        }
+      }
+      user_input[y][x] = 3;
+      setUserInputs(user_input);
+      setClearCheck(2);
+      setIsRunning(false);
+      return 1;
+    }
+    return 0;
   };
 
   const clickHandler = (event: React.MouseEvent, x: number, y: number) => {
@@ -100,13 +123,12 @@ const Home = () => {
     if (event.type === 'contextmenu') {
       const user_input = structuredClone(userInputs);
       if (user_input[y][x] === 0 && flagCount === 0) return;
-      // user_input[y][x] = user_input[y][x] === 2 ? 0 : 2; // 2: フラグ
       if (user_input[y][x] === 2) {
         user_input[y][x] = 0;
-        setFlagCount(flagCount + 1);
+        setFlagCount((prevFlagCount) => prevFlagCount + 1);
       } else {
         user_input[y][x] = 2;
-        setFlagCount(flagCount - 1);
+        setFlagCount((prevFlagCount) => prevFlagCount - 1);
       }
       setUserInputs(user_input);
       return;
@@ -114,33 +136,21 @@ const Home = () => {
       if (userInputs[y][x] === 2) return; // フラグが立っていたらクリックできない
       const user_input = structuredClone(userInputs);
 
-      if (bombMap[y][x] === 1) {
-        // ボムをクリックしたら
-
-        setClearCheck(2);
-        for (let i = 0; i < 9; i++) {
-          for (let j = 0; j < 9; j++) {
-            if (bombMap[i][j] === 1) {
-              user_input[i][j] = 1;
-            }
-          }
-        }
-        user_input[y][x] = 3;
-        setUserInputs(user_input);
-        return;
-      }
       const input_flat = user_input.flat();
       const clickCount = input_flat.filter((v) => v === 1);
+
+      // 最初のクリックだったら
       if (clickCount.length === 0) {
-        // 最初のクリックだったら
         const board = structuredClone(bombMap);
         let count = 0;
+
+        // マップのボムがbumbAmount個になるまで繰り返し
         while (count < bombAmount) {
-          // マップのボムがbumbAmount個になるまで繰り返し
           const bumb_x = getRandomInt(0, 8);
           const bumb_y = getRandomInt(0, 8);
+
+          // ボムが置ける場所だったら
           if (bumb_x !== x && bumb_y !== y && board[bumb_y][bumb_x] !== 1) {
-            // ボムが置ける場所だったら
             count++;
             board[bumb_y][bumb_x] = 1;
           }
@@ -167,16 +177,42 @@ const Home = () => {
         emptyCell(user_input, board, x, y);
         setBombMap(board);
         setUserInputs(user_input);
+        setIsRunning(true);
         return;
       }
+
+      // ボムをクリックしたら
+      if (gameSetCheck(x, y, user_input)) return;
+
       emptyCell(user_input, bombMap, x, y);
-      setUserInputs(user_input);
+
       const input_flat2 = user_input.flat();
       const clickCountAgain = input_flat2.filter((v) => v === 1);
-      if (clickCountAgain.length === 81 - bombAmount) setClearCheck(1);
+
+      // ゲームクリアしたら
+      if (clickCountAgain.length === bombMap.length ** 2 - bombAmount) {
+        setIsRunning(false);
+        for (let i = 0; i < bombMap.length; i++) {
+          for (let j = 0; j < bombMap.length; j++) {
+            if (bombMap[i][j] === 1 && user_input[i][j] !== 2) user_input[i][j] = 2;
+          }
+        }
+        setClearCheck(1);
+      }
+      setUserInputs(user_input);
     }
     return;
   };
+
+  useEffect(() => {
+    if (!isRunning) return;
+
+    const timer = setInterval(() => {
+      setTime((prevTime) => prevTime + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isRunning]);
 
   return (
     <div className={styles.container}>
@@ -189,16 +225,10 @@ const Home = () => {
           <div className={styles.custom}>カスタム</div>
         </div>
 
+        {/* ゲームが終わったら */}
         {clearCheck > 0 && (
           <div className={styles.endgame}>
-            <div>タイム：秒</div>
-            <div>予想タイム：</div>
-            <div>3BV : </div>
-            <div>3BV/s : </div>
-            <div>クリック数：</div>
-            <div>効率：</div>
-            <hr />
-            <div>経験：</div>
+            <div>タイム：{time}秒</div>
           </div>
         )}
 
@@ -235,15 +265,19 @@ const Home = () => {
               <div className={styles.timer}>
                 <div
                   className={styles.timerImg}
-                  style={{ backgroundPosition: `-${(30 * 0) % 300}px 0` }}
+                  style={{
+                    backgroundPosition: `-${(((Math.floor(time / 100) % 100) + 9) * 30) % 300}px 0`,
+                  }}
                 />
                 <div
                   className={styles.timerImg}
-                  style={{ backgroundPosition: `-${(30 * 0) % 300}px 0` }}
+                  style={{
+                    backgroundPosition: `-${(((Math.floor(time / 10) % 10) + 9) * 30) % 300}px 0`,
+                  }}
                 />
                 <div
                   className={styles.timerImg}
-                  style={{ backgroundPosition: `-${(30 * 0) % 300}px 0` }}
+                  style={{ backgroundPosition: `-${(((time % 10) + 9) * 30) % 300}px 0` }}
                 />
               </div>
             </div>

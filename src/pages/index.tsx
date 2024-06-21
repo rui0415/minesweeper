@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import styles from './index.module.css';
 
+let bombAmount = 10;
+let width = 9;
+let height = 9;
+
 const Home = () => {
   const [userInputs, setUserInputs] = useState([
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -37,7 +41,6 @@ const Home = () => {
     [1, 1],
   ];
 
-  const bombAmount = 10;
   // 0 = ゲーム中
   // 1 = ゲームクリア
   // 2 = ゲームオーバー
@@ -46,11 +49,53 @@ const Home = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [flagCount, setFlagCount] = useState(bombAmount);
 
+  const createBoard = () => {
+    console.log(height, width);
+    const board = new Array(height);
+    const user_input = new Array(height);
+
+    for (let y = 0; y < height; y++) {
+      board[y] = new Array(width).fill(0);
+      user_input[y] = new Array(width).fill(0);
+    }
+    setBombMap(board);
+    setUserInputs(user_input);
+  };
+
+  const handleGameLevel = (level: string) => {
+    resetGame();
+
+    if (level === 'easy') {
+      bombAmount = 10;
+      height = 9;
+      width = 9;
+      createBoard();
+    } else if (level === 'normal') {
+      bombAmount = 40;
+      height = 16;
+      width = 16;
+      createBoard();
+    } else if (level === 'hard') {
+      bombAmount = 99;
+      height = 16;
+      width = 30;
+      createBoard();
+    } else {
+      width = Number(document.getElementsByName('width'));
+      height = Number(document.getElementsByName('height'));
+      bombAmount = Number(document.getElementById('bomb'));
+      console.log(width, height);
+      createBoard();
+    }
+
+    setFlagCount(bombAmount);
+  };
+
   const resetGame = () => {
     const board = structuredClone(bombMap);
     const user_input = structuredClone(userInputs);
-    for (let i = 0; i < 9; i++) {
-      for (let j = 0; j < 9; j++) {
+    for (let i = 0; i < height; i++) {
+      for (let j = 0; j < width; j++) {
         board[i][j] = 0;
         user_input[i][j] = 0;
       }
@@ -79,12 +124,12 @@ const Home = () => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
-  const checkRange = (x: number, y: number) => {
-    return 0 <= x && x < 9 && 0 <= y && y < 9;
+  const checkRange = (y: number, x: number) => {
+    return 0 <= x && x < width && 0 <= y && y < height;
   };
 
   const emptyCell = (user_input: number[][], board: number[][], x: number, y: number) => {
-    if (!checkRange(x, y) || user_input[y][x] === 1) {
+    if (!checkRange(y, x) || user_input[y][x] === 1) {
       return;
     }
     if (user_input[y][x] === 2) setFlagCount((prevFlagCount) => prevFlagCount + 1);
@@ -100,9 +145,9 @@ const Home = () => {
     if (bombMap[y][x] === 1) {
       // ボムをクリックしたら負け
 
-      for (let i = 0; i < 9; i++) {
-        for (let j = 0; j < 9; j++) {
-          if (bombMap[i][j] === 1) {
+      for (let i = 0; i < height; i++) {
+        for (let j = 0; j < width; j++) {
+          if (bombMap[i][j] === 1 && userInputs[i][j] !== 2) {
             user_input[i][j] = 1;
           }
         }
@@ -120,6 +165,7 @@ const Home = () => {
     event.preventDefault();
     if (clearCheck === 2) return;
 
+    //右クリックだったら
     if (event.type === 'contextmenu') {
       const user_input = structuredClone(userInputs);
       if (user_input[y][x] === 0 && flagCount === 0) return;
@@ -130,12 +176,15 @@ const Home = () => {
         user_input[y][x] = 2;
         setFlagCount((prevFlagCount) => prevFlagCount - 1);
       }
+
       setUserInputs(user_input);
       return;
-    } else if (event.type === 'click') {
+    }
+    // 左クリックだったら
+    else if (event.type === 'click') {
       if (userInputs[y][x] === 2) return; // フラグが立っていたらクリックできない
-      const user_input = structuredClone(userInputs);
 
+      const user_input = structuredClone(userInputs);
       const input_flat = user_input.flat();
       const clickCount = input_flat.filter((v) => v === 1);
 
@@ -146,8 +195,8 @@ const Home = () => {
 
         // マップのボムがbumbAmount個になるまで繰り返し
         while (count < bombAmount) {
-          const bumb_x = getRandomInt(0, 8);
-          const bumb_y = getRandomInt(0, 8);
+          const bumb_x = getRandomInt(0, width - 1);
+          const bumb_y = getRandomInt(0, height - 1);
 
           // ボムが置ける場所だったら
           if (bumb_x !== x && bumb_y !== y && board[bumb_y][bumb_x] !== 1) {
@@ -156,8 +205,8 @@ const Home = () => {
           }
         }
 
-        for (let i = 0; i < 9; i++) {
-          for (let j = 0; j < 9; j++) {
+        for (let i = 0; i < height; i++) {
+          for (let j = 0; j < width; j++) {
             if (board[i][j] === 1) {
               // 全セルみて、そのセルが爆弾だったら
               for (const dir of direction) {
@@ -174,6 +223,7 @@ const Home = () => {
             }
           }
         }
+
         emptyCell(user_input, board, x, y);
         setBombMap(board);
         setUserInputs(user_input);
@@ -190,10 +240,10 @@ const Home = () => {
       const clickCountAgain = input_flat2.filter((v) => v === 1);
 
       // ゲームクリアしたら
-      if (clickCountAgain.length === bombMap.length ** 2 - bombAmount) {
+      if (clickCountAgain.length === height * width - bombAmount) {
         setIsRunning(false);
-        for (let i = 0; i < bombMap.length; i++) {
-          for (let j = 0; j < bombMap.length; j++) {
+        for (let i = 0; i < height; i++) {
+          for (let j = 0; j < width; j++) {
             if (bombMap[i][j] === 1 && user_input[i][j] !== 2) user_input[i][j] = 2;
           }
         }
@@ -219,10 +269,25 @@ const Home = () => {
       <div className={styles.gameStyle}>
         {/* レベル選択 */}
         <div className={styles.gameHeader}>
-          <div className={styles.easy}>初級</div>
-          <div className={styles.normal}>中級</div>
-          <div className={styles.hard}>上級</div>
+          <div className={styles.easy} onClick={() => handleGameLevel('easy')}>
+            初級
+          </div>
+          <div className={styles.normal} onClick={() => handleGameLevel('normal')}>
+            中級
+          </div>
+          <div className={styles.hard} onClick={() => handleGameLevel('hard')}>
+            上級
+          </div>
           <div className={styles.custom}>カスタム</div>
+          <div className={styles.customSettings}>
+            <label>幅:</label>
+            <input type="number" name="width" value={5} id="width" />
+            <label>高さ:</label>
+            <input type="number" name="height" value={5} id="height" />
+            <label>爆弾数:</label>
+            <input type="number" name="bomb" value={1} id="bomb" />
+            <button onClick={() => handleGameLevel('custom')}>更新</button>
+          </div>
         </div>
 
         {/* ゲームが終わったら */}
@@ -283,7 +348,10 @@ const Home = () => {
             </div>
 
             {/* マップ */}
-            <div className={styles.gameBoardMap}>
+            <div
+              className={styles.gameBoardMap}
+              style={{ gridTemplateColumns: `repeat(${width}, 1fr)` }}
+            >
               {bombMap.map((row, y) =>
                 row.map((cell, x) => (
                   <div key={`${x}-${y}`}>

@@ -39,6 +39,42 @@
   color: #fff;
 }
 
+.customSettings {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.customSettings label {
+  font-weight: bold;
+  color: #ccc;
+}
+
+.customSettings input[type='number'] {
+  width: 50px;
+  padding: 5px;
+  font-size: 16px;
+  color: #000;
+  background-color: #fff;
+  border: 2px solid #788088;
+  border-radius: 5px;
+}
+
+.customSettings button {
+  padding: 5px 10px;
+  font-size: 16px;
+  color: #fff;
+  cursor: pointer;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+}
+
+.customSettings button:hover {
+  background-color: #0056b3;
+}
+
 .endgame {
   position: absolute;
   top: 20%;
@@ -75,12 +111,9 @@
 .timer {
   display: flex;
   justify-content: space-between;
-  width: 30%;
+  width: 120px;
   height: 60px;
-  padding-top: 3px;
-  font-family: 'Digital-7', sans-serif;
-  font-size: 20px;
-  line-height: 25px;
+  padding: 2px;
   text-align: center;
   background-color: black;
   border: 3px inset #788088;
@@ -160,26 +193,18 @@
   background: url('../assets/images/icons.png') no-repeat -270px 0;
 }
 
-@media (width <= 768px) {
-  .gameBoardMap {
-    grid-template-columns: repeat(9, 1fr);
-  }
+@media (width <= 500px) {
+  .endgame {
+    position: absolute;
+    top: 100%;
+    left: 20%;
+    width: 30vh;
+    height: 5vh;
+    padding: 1px;
 
-  .cell {
-    width: 25px;
-    height: 25px;
-  }
-
-  .flagCount,
-  .timer {
-    width: 65px;
-    height: 37px;
-    font-size: 16px;
-    line-height: 20px;
-  }
-
-  .icon {
-    width: 36px;
-    height: 36px;
+    /* margin-left: 20px; */
+    color: azure;
+    text-align: center;
+    border: 2px solid gray;
   }
 }

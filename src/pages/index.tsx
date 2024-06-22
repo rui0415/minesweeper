@@ -89,17 +89,21 @@ const Home = () => {
       const widthElement = document.getElementById('width');
       const heightElement = document.getElementById('height');
       const bombElement = document.getElementById('bomb');
+
       if (widthElement && heightElement && bombElement) {
-        console.log('hello');
         const widthValue = Number((widthElement as HTMLInputElement).value);
         const heightValue = Number((heightElement as HTMLInputElement).value);
         let bombValue = Number((bombElement as HTMLInputElement).value);
+        console.log(widthValue, heightValue, bombValue);
         if (widthValue * heightValue < bombValue) {
           bombValue = widthValue * heightValue;
+          console.log(bombValue);
         }
+
         bombAmount = bombValue;
         height = heightValue;
         width = widthValue;
+        console.log(bombAmount, height, width);
         createBoard();
       }
     }
@@ -157,13 +161,13 @@ const Home = () => {
     }
   };
 
-  const gameSetCheck = (x: number, y: number, user_input: number[][]) => {
-    if (bombMap[y][x] === 1) {
+  const gameSetCheck = (x: number, y: number, user_input: number[][], board: number[][]) => {
+    if (board[y][x] === 1) {
       // ボムをクリックしたら負け
 
       for (let i = 0; i < height; i++) {
         for (let j = 0; j < width; j++) {
-          if (bombMap[i][j] === 1 && userInputs[i][j] !== 2) {
+          if (board[i][j] === 1 && user_input[i][j] !== 2) {
             user_input[i][j] = 1;
           }
         }
@@ -223,17 +227,29 @@ const Home = () => {
       // 最初のクリックだったら
       if (clickCount.length === 0) {
         const board = structuredClone(bombMap);
+        // ボムの数とセルの数が一緒だったら
+        if (bombAmount === height * width) {
+          for (let i = 0; i < height; i++) {
+            for (let j = 0; j < width; j++) {
+              board[i][j] = 1;
+            }
+          }
+          gameSetCheck(x, y, user_input, board);
+          setBombMap(board);
+          return;
+        }
+
         let count = 0;
 
         // マップのボムがbumbAmount個になるまで繰り返し
         while (count < bombAmount) {
-          const bumb_x = getRandomInt(0, width - 1);
-          const bumb_y = getRandomInt(0, height - 1);
+          const bomb_x = getRandomInt(0, width - 1);
+          const bomb_y = getRandomInt(0, height - 1);
 
           // ボムが置ける場所だったら
-          if (bumb_x !== x && bumb_y !== y && board[bumb_y][bumb_x] !== 1) {
+          if (bomb_x !== x && bomb_y !== y && board[bomb_y][bomb_x] !== 1) {
             count++;
-            board[bumb_y][bumb_x] = 1;
+            board[bomb_y][bomb_x] = 1;
           }
         }
 
@@ -255,7 +271,6 @@ const Home = () => {
             }
           }
         }
-
         emptyCell(user_input, board, x, y);
         setBombMap(board);
         setIsRunning(true);
@@ -264,7 +279,7 @@ const Home = () => {
       }
 
       // ボムをクリックしたら
-      if (gameSetCheck(x, y, user_input)) return;
+      if (gameSetCheck(x, y, user_input, bombMap)) return;
 
       emptyCell(user_input, bombMap, x, y);
       // ゲームクリアしたら
@@ -322,52 +337,60 @@ const Home = () => {
         <div>
           <div className={styles.gameBoard}>
             {/* ボードの中のヘッダー部分。ボムの数やニコちゃんマーク、タイマー */}
-            <div className={styles.gameBoardHeader}>
-              <div className={styles.flagCount}>
-                <div
-                  className={styles.flagImg}
-                  style={{
-                    backgroundPosition: `-${(((Math.floor(flagCount / 100) % 100) + 9) * 30) % 300}px 0`,
-                  }}
-                />
-                <div
-                  className={styles.flagImg}
-                  style={{
-                    backgroundPosition: `-${(((Math.floor(flagCount / 10) % 10) + 9) * 30) % 300}px 0`,
-                  }}
-                />
-                <div
-                  className={styles.flagImg}
-                  style={{
-                    backgroundPosition: `-${(((flagCount % 10) + 9) * 30) % 300}px 0`,
-                  }}
-                />
+            {width > 3 && (
+              <div className={styles.gameBoardHeader}>
+                <div className={styles.flagCount}>
+                  <div
+                    className={styles.flagImg}
+                    style={{
+                      backgroundPosition: `-${(((Math.floor(flagCount / 100) % 100) + 9) * 30) % 300}px 0`,
+                    }}
+                  />
+                  <div
+                    className={styles.flagImg}
+                    style={{
+                      backgroundPosition: `-${(((Math.floor(flagCount / 10) % 10) + 9) * 30) % 300}px 0`,
+                    }}
+                  />
+                  <div
+                    className={styles.flagImg}
+                    style={{
+                      backgroundPosition: `-${(((flagCount % 10) + 9) * 30) % 300}px 0`,
+                    }}
+                  />
+                </div>
+
+                {width > 7 && (
+                  <div className={styles.gameIcon} onClick={() => handleGameIconClick()}>
+                    <div
+                      className={styles.icon}
+                      style={{ backgroundPosition: `-${330 + 30 * clearCheck}px 0` }}
+                    />
+                  </div>
+                )}
+
+                {width > 6 && (
+                  <div className={styles.timer}>
+                    <div
+                      className={styles.timerImg}
+                      style={{
+                        backgroundPosition: `-${(((Math.floor(time / 100) % 100) + 9) * 30) % 300}px 0`,
+                      }}
+                    />
+                    <div
+                      className={styles.timerImg}
+                      style={{
+                        backgroundPosition: `-${(((Math.floor(time / 10) % 10) + 9) * 30) % 300}px 0`,
+                      }}
+                    />
+                    <div
+                      className={styles.timerImg}
+                      style={{ backgroundPosition: `-${(((time % 10) + 9) * 30) % 300}px 0` }}
+                    />
+                  </div>
+                )}
               </div>
-              <div className={styles.gameIcon} onClick={() => handleGameIconClick()}>
-                <div
-                  className={styles.icon}
-                  style={{ backgroundPosition: `-${330 + 30 * clearCheck}px 0` }}
-                />
-              </div>
-              <div className={styles.timer}>
-                <div
-                  className={styles.timerImg}
-                  style={{
-                    backgroundPosition: `-${(((Math.floor(time / 100) % 100) + 9) * 30) % 300}px 0`,
-                  }}
-                />
-                <div
-                  className={styles.timerImg}
-                  style={{
-                    backgroundPosition: `-${(((Math.floor(time / 10) % 10) + 9) * 30) % 300}px 0`,
-                  }}
-                />
-                <div
-                  className={styles.timerImg}
-                  style={{ backgroundPosition: `-${(((time % 10) + 9) * 30) % 300}px 0` }}
-                />
-              </div>
-            </div>
+            )}
 
             {/* マップ */}
             <div

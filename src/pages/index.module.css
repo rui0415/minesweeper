@@ -39,40 +39,17 @@
   color: #fff;
 }
 
-.customSettings {
+.customStyle {
   display: flex;
   gap: 10px;
-  align-items: center;
-  margin-top: 10px;
+  justify-content: center;
+  margin-bottom: 10px;
+  color: yellowgreen;
 }
 
-.customSettings label {
-  font-weight: bold;
-  color: #ccc;
-}
-
-.customSettings input[type='number'] {
+.customStyle input {
   width: 50px;
-  padding: 5px;
-  font-size: 16px;
-  color: #000;
-  background-color: #fff;
-  border: 2px solid #788088;
-  border-radius: 5px;
-}
-
-.customSettings button {
-  padding: 5px 10px;
-  font-size: 16px;
-  color: #fff;
-  cursor: pointer;
-  background-color: #007bff;
-  border: none;
-  border-radius: 5px;
-}
-
-.customSettings button:hover {
-  background-color: #0056b3;
+  background-color: #ccc;
 }
 
 .endgame {

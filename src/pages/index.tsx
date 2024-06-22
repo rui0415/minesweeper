@@ -4,6 +4,7 @@ import styles from './index.module.css';
 let bombAmount = 10;
 let width = 9;
 let height = 9;
+let custom = false;
 
 const Home = () => {
   const [userInputs, setUserInputs] = useState([
@@ -50,7 +51,6 @@ const Home = () => {
   const [flagCount, setFlagCount] = useState(bombAmount);
 
   const createBoard = () => {
-    console.log(height, width);
     const board = new Array(height);
     const user_input = new Array(height);
 
@@ -66,26 +66,42 @@ const Home = () => {
     resetGame();
 
     if (level === 'easy') {
+      custom = false;
       bombAmount = 10;
       height = 9;
       width = 9;
       createBoard();
     } else if (level === 'normal') {
+      custom = false;
       bombAmount = 40;
       height = 16;
       width = 16;
       createBoard();
     } else if (level === 'hard') {
+      custom = false;
       bombAmount = 99;
       height = 16;
       width = 30;
       createBoard();
-    } else {
-      width = Number(document.getElementsByName('width'));
-      height = Number(document.getElementsByName('height'));
-      bombAmount = Number(document.getElementById('bomb'));
-      console.log(width, height);
-      createBoard();
+    } else if (level === 'custom') {
+      custom = true;
+
+      const widthElement = document.getElementById('width');
+      const heightElement = document.getElementById('height');
+      const bombElement = document.getElementById('bomb');
+      if (widthElement && heightElement && bombElement) {
+        console.log('hello');
+        const widthValue = Number((widthElement as HTMLInputElement).value);
+        const heightValue = Number((heightElement as HTMLInputElement).value);
+        let bombValue = Number((bombElement as HTMLInputElement).value);
+        if (widthValue * heightValue < bombValue) {
+          bombValue = widthValue * heightValue;
+        }
+        bombAmount = bombValue;
+        height = heightValue;
+        width = widthValue;
+        createBoard();
+      }
     }
 
     setFlagCount(bombAmount);
@@ -161,9 +177,25 @@ const Home = () => {
     return 0;
   };
 
+  const gameClearCheck = (user_input: number[][], board: number[][]) => {
+    const input_flat = user_input.flat();
+    const clickCount = input_flat.filter((v) => v === 1);
+    // ゲームクリアしたら
+    if (clickCount.length === height * width - bombAmount) {
+      setIsRunning(false);
+      for (let i = 0; i < height; i++) {
+        for (let j = 0; j < width; j++) {
+          if (board[i][j] === 1 && user_input[i][j] !== 2) user_input[i][j] = 2;
+        }
+      }
+      setClearCheck(1);
+    }
+    setUserInputs(user_input);
+  };
+
   const clickHandler = (event: React.MouseEvent, x: number, y: number) => {
     event.preventDefault();
-    if (clearCheck === 2) return;
+    if (clearCheck === 2 || clearCheck === 1) return;
 
     //右クリックだったら
     if (event.type === 'contextmenu') {
@@ -226,8 +258,8 @@ const Home = () => {
 
         emptyCell(user_input, board, x, y);
         setBombMap(board);
-        setUserInputs(user_input);
         setIsRunning(true);
+        gameClearCheck(user_input, board);
         return;
       }
 
@@ -235,21 +267,8 @@ const Home = () => {
       if (gameSetCheck(x, y, user_input)) return;
 
       emptyCell(user_input, bombMap, x, y);
-
-      const input_flat2 = user_input.flat();
-      const clickCountAgain = input_flat2.filter((v) => v === 1);
-
       // ゲームクリアしたら
-      if (clickCountAgain.length === height * width - bombAmount) {
-        setIsRunning(false);
-        for (let i = 0; i < height; i++) {
-          for (let j = 0; j < width; j++) {
-            if (bombMap[i][j] === 1 && user_input[i][j] !== 2) user_input[i][j] = 2;
-          }
-        }
-        setClearCheck(1);
-      }
-      setUserInputs(user_input);
+      gameClearCheck(user_input, bombMap);
     }
     return;
   };
@@ -278,18 +297,21 @@ const Home = () => {
           <div className={styles.hard} onClick={() => handleGameLevel('hard')}>
             上級
           </div>
-          <div className={styles.custom}>カスタム</div>
-          <div className={styles.customSettings}>
-            <label>幅:</label>
-            <input type="number" name="width" value={5} id="width" />
-            <label>高さ:</label>
-            <input type="number" name="height" value={5} id="height" />
-            <label>爆弾数:</label>
-            <input type="number" name="bomb" value={1} id="bomb" />
-            <button onClick={() => handleGameLevel('custom')}>更新</button>
+          <div className={styles.custom} onClick={() => handleGameLevel('custom')}>
+            カスタム
           </div>
         </div>
-
+        {custom && (
+          <div className={styles.customStyle}>
+            <label>幅：</label>
+            <input type="number" defaultValue={width} id="width" />
+            <label>高さ：</label>
+            <input type="number" defaultValue={height} id="height" />
+            <label>爆弾数：</label>
+            <input type="number" defaultValue={bombAmount} id="bomb" />
+            <button onClick={() => handleGameLevel('custom')}>更新</button>
+          </div>
+        )}
         {/* ゲームが終わったら */}
         {clearCheck > 0 && (
           <div className={styles.endgame}>

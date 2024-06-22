@@ -45,6 +45,7 @@ const Home = () => {
   // 0 = ゲーム中
   // 1 = ゲームクリア
   // 2 = ゲームオーバー
+
   const [clearCheck, setClearCheck] = useState(0);
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -70,44 +71,46 @@ const Home = () => {
       bombAmount = 10;
       height = 9;
       width = 9;
-      createBoard();
     } else if (level === 'normal') {
       custom = false;
       bombAmount = 40;
       height = 16;
       width = 16;
-      createBoard();
     } else if (level === 'hard') {
       custom = false;
       bombAmount = 99;
       height = 16;
       width = 30;
-      createBoard();
     } else if (level === 'custom') {
       custom = true;
-
+      bombAmount = 10;
+      height = 9;
+      width = 9;
       const widthElement = document.getElementById('width');
       const heightElement = document.getElementById('height');
       const bombElement = document.getElementById('bomb');
 
       if (widthElement && heightElement && bombElement) {
-        const widthValue = Number((widthElement as HTMLInputElement).value);
-        const heightValue = Number((heightElement as HTMLInputElement).value);
+        let widthValue = Number((widthElement as HTMLInputElement).value);
+        let heightValue = Number((heightElement as HTMLInputElement).value);
         let bombValue = Number((bombElement as HTMLInputElement).value);
-        console.log(widthValue, heightValue, bombValue);
-        if (widthValue * heightValue < bombValue) {
-          bombValue = widthValue * heightValue;
-          console.log(bombValue);
+
+        if (bombValue < 1) {
+          alert('爆弾数は1以上を入力してください');
+          return;
         }
 
+        if (widthValue < 1) widthValue = 1;
+        if (heightValue < 1) heightValue = 1;
+        if (widthValue * heightValue < bombValue) bombValue = widthValue * heightValue;
         bombAmount = bombValue;
         height = heightValue;
         width = widthValue;
-        console.log(bombAmount, height, width);
-        createBoard();
+        console.log(height, width, bombAmount);
       }
     }
 
+    createBoard();
     setFlagCount(bombAmount);
   };
 
@@ -192,6 +195,7 @@ const Home = () => {
           if (board[i][j] === 1 && user_input[i][j] !== 2) user_input[i][j] = 2;
         }
       }
+      setFlagCount(0);
       setClearCheck(1);
     }
     setUserInputs(user_input);
@@ -199,12 +203,14 @@ const Home = () => {
 
   const clickHandler = (event: React.MouseEvent, x: number, y: number) => {
     event.preventDefault();
-    if (clearCheck === 2 || clearCheck === 1) return;
+    if (clearCheck > 0) return;
+    setIsRunning(true);
 
     //右クリックだったら
     if (event.type === 'contextmenu') {
       const user_input = structuredClone(userInputs);
-      if (user_input[y][x] === 0 && flagCount === 0) return;
+
+      if (user_input[y][x] === 1) return;
       if (user_input[y][x] === 2) {
         user_input[y][x] = 0;
         setFlagCount((prevFlagCount) => prevFlagCount + 1);
@@ -227,6 +233,7 @@ const Home = () => {
       // 最初のクリックだったら
       if (clickCount.length === 0) {
         const board = structuredClone(bombMap);
+
         // ボムの数とセルの数が一緒だったら
         if (bombAmount === height * width) {
           for (let i = 0; i < height; i++) {
@@ -240,16 +247,21 @@ const Home = () => {
         }
 
         let count = 0;
+        let n = 0;
+        const max_loop = 1000;
 
         // マップのボムがbumbAmount個になるまで繰り返し
-        while (count < bombAmount) {
+        while (count < bombAmount && n < max_loop) {
+          n++;
           const bomb_x = getRandomInt(0, width - 1);
           const bomb_y = getRandomInt(0, height - 1);
 
           // ボムが置ける場所だったら
-          if (bomb_x !== x && bomb_y !== y && board[bomb_y][bomb_x] !== 1) {
-            count++;
-            board[bomb_y][bomb_x] = 1;
+          if (bomb_x !== x || bomb_y !== y) {
+            if (board[bomb_y][bomb_x] === 0) {
+              count++;
+              board[bomb_y][bomb_x] = 1;
+            }
           }
         }
 
@@ -273,7 +285,6 @@ const Home = () => {
         }
         emptyCell(user_input, board, x, y);
         setBombMap(board);
-        setIsRunning(true);
         gameClearCheck(user_input, board);
         return;
       }
@@ -323,7 +334,7 @@ const Home = () => {
             <label>高さ：</label>
             <input type="number" defaultValue={height} id="height" />
             <label>爆弾数：</label>
-            <input type="number" defaultValue={bombAmount} id="bomb" />
+            <input type="number" defaultValue={bombAmount} id="bomb" min="1" />
             <button onClick={() => handleGameLevel('custom')}>更新</button>
           </div>
         )}
@@ -340,7 +351,7 @@ const Home = () => {
             {width > 3 && (
               <div className={styles.gameBoardHeader}>
                 <div className={styles.flagCount}>
-                  <div
+                  {/* <div
                     className={styles.flagImg}
                     style={{
                       backgroundPosition: `-${(((Math.floor(flagCount / 100) % 100) + 9) * 30) % 300}px 0`,
@@ -357,7 +368,8 @@ const Home = () => {
                     style={{
                       backgroundPosition: `-${(((flagCount % 10) + 9) * 30) % 300}px 0`,
                     }}
-                  />
+                  /> */}
+                  <div className={styles.number}>{flagCount}</div>
                 </div>
 
                 {width > 7 && (
@@ -371,7 +383,7 @@ const Home = () => {
 
                 {width > 6 && (
                   <div className={styles.timer}>
-                    <div
+                    {/* <div
                       className={styles.timerImg}
                       style={{
                         backgroundPosition: `-${(((Math.floor(time / 100) % 100) + 9) * 30) % 300}px 0`,
@@ -386,7 +398,8 @@ const Home = () => {
                     <div
                       className={styles.timerImg}
                       style={{ backgroundPosition: `-${(((time % 10) + 9) * 30) % 300}px 0` }}
-                    />
+                    /> */}
+                    <div className={styles.number}>{time}</div>
                   </div>
                 )}
               </div>

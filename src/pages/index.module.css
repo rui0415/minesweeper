@@ -96,6 +96,14 @@
   border: 3px inset #788088;
 }
 
+.number {
+  width: 100%;
+  padding: 10%;
+  font-family: monospace;
+  font-size: xx-large;
+  color: red;
+}
+
 .flagImg {
   width: 30px;
   margin: 2px;
